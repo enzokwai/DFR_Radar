@@ -26,7 +26,7 @@ size_t DFR_Radar::readBytes( char *buffer, size_t length )
 
   while( remaining )
   {
-    if( sensorUART -> available() )
+    if( sensorUART->available() )
     {
       buffer[offset] = sensorUART->read();
       offset++;
