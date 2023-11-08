@@ -1,6 +1,9 @@
 # DFR_Radar Library for Arduino
 
-<!-- [![Arduino Lint](https://github.com/MaffooClock/DFR_Radar/actions/workflows/check-arduino.yml/badge.svg)](https://github.com/MaffooClock/DFR_Radar/actions/workflows/check-arduino.yml) [![Compile Examples](https://github.com/MaffooClock/DFR_Radar/actions/workflows/compile-examples.yml/badge.svg)](https://github.com/MaffooClock/DFR_Radar/actions/workflows/compile-examples.yml) [![Arduino Library](https://www.ardu-badge.com/badge/DFR_Radar.svg?)](https://www.ardu-badge.com/DFR_Radar) [![PlatformIO Registry](https://badges.registry.platformio.org/packages/maffooclock/library/DFR_Radar.svg)](https://registry.platformio.org/libraries/maffooclock/DFR_Radar) -->
+<!-- [![Arduino Lint](https://github.com/MaffooClock/DFR_Radar/actions/workflows/check-arduino.yml/badge.svg)](https://github.com/MaffooClock/DFR_Radar/actions/workflows/check-arduino.yml) -->
+<!-- [![Compile Examples](https://github.com/MaffooClock/DFR_Radar/actions/workflows/compile-examples.yml/badge.svg)](https://github.com/MaffooClock/DFR_Radar/actions/workflows/compile-examples.yml) -->
+<!-- [![Arduino Library](https://www.ardu-badge.com/badge/DFR_Radar.svg?)](https://www.ardu-badge.com/DFR_Radar) -->
+[![PlatformIO Registry](https://badges.registry.platformio.org/packages/maffooclock/library/DFR_Radar.svg)](https://registry.platformio.org/libraries/maffooclock/DFR_Radar)
 
 This is a maintained version of the [original DFRobot_mmWave_Radar](https://github.com/DFRobotdl/DFRobot_mmWave_Radar) library.  After more than two years had passed without any commits beyond the initial commit, and issues receiving no attention, I assumed that it had become abandonware, so decided to fork this library to bring it up-to-date and get it published into the Arduino Library and PlatformIO Registry.
 
@@ -16,7 +19,6 @@ The SEN0395 24GHz millimeter-wave Human Presence Detection sensor (available fro
 * [Credits](#credits)
 
 
-
 ## About the SEN0395
 
 ![Front and back of DFRobot SEN0395 module](.github/photos/SEN0395.png)
@@ -28,7 +30,7 @@ The radar sensor can detect human presence — both in motion and stationary —
 
 ## Installation
 
-Soon, you will be able to install this library automatically from the Arduino Library or PlatformIO Registry.  I will update this README as soon as that happens.  Until then, manual installation is necessary.
+PlatformIO users can install the library from the registry, but it is not yet available in the Arduino Library (coming soon!), so Arduino IDE users will have to install manually for now.
 
 
 #### Arduino IDE:
@@ -41,20 +43,19 @@ First, [click here](https://github.com/MaffooClock/DFR_Radar/archive/refs/heads/
  4. Select the ZIP file you downloaded
 
 
-#### Platform IO:
+#### PlatformIO:
 
-There are a couple of options (choose _one_, don't do all three):
+There are multiple ways, but three of those are below (pick **one**, don't do all three!):
 
- - Add `https://github.com/MaffooClock/DFR_Radar` to the [`lib_deps`](https://docs.platformio.org/en/stable/projectconf/sections/env/options/library/lib_deps.html) line in [platformio.ini](https://docs.platformio.org/en/stable/projectconf/index.html):
+ - Search the [Library Registry](https://registry.platformio.org/search?t=library) for `MaffooClock/DFR_Radar` and install it automatically.
 
- - [Download a ZIP](https://github.com/MaffooClock/DFR_Radar/archive/refs/heads/master.zip) of this repo and un-zip it in the `lib` folder in your project folder.
+ - Edit your [platformio.ini](https://docs.platformio.org/en/latest/projectconf/index.html) file and add `MaffooClock/DFR_Radar@^1.0.0` to the [`lib_deps`](https://docs.platformio.org/en/latest/projectconf/sections/env/options/library/lib_deps.html) stanza.
 
- - Clone the repo from the command line:
- ```shell
- cd MyProject/lib
- git clone https://github.com/MaffooClock/DFR_Radar.git
-
- ```
+ - Use the command line interface:
+   ```shell
+   cd MyProject
+   pio pkg install --library "MaffooClock/DFR_Radar@^1.0.0"
+   ```
 
 
 ### Include the Header
