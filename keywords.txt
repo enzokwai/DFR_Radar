@@ -1,24 +1,27 @@
 #######################################
-# Syntax Coloring Map 
+# Syntax Coloring Map
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
 
-DFRobot_mmWave_Radar	KEYWORD1
+DFR_Radar   KEYWORD1
 
 #######################################
 # Methods and Functions  (KEYWORD2)
 #######################################
-
-DetRangeCfg	KEYWORD2
-readPresenceDetection	KEYWORD2
-OutputLatency	KEYWORD2
+checkPresence	KEYWORD2
+configureAutoStart	KEYWORD2
+configureLED	KEYWORD2
+disableAutoStart	KEYWORD2
+disableLED	KEYWORD2
+enableAutoStart	KEYWORD2
+enableLED	KEYWORD2
 factoryReset	KEYWORD2
-
-
-#######################################
-# Constants   (LITERAL1)
-#######################################
-
+saveConfig	KEYWORD2
+setDetectionArea	KEYWORD2
+setOutputLatency	KEYWORD2
+setSensitivity	KEYWORD2
+start	KEYWORD2
+stop	KEYWORD2
