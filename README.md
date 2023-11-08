@@ -1,111 +1,86 @@
-# DFRobot_mmWave_Radar
-- This 24GHz millimeter-wave radar sensor employs FMCW, CW multi-mode modulation and separate transmitter and receiver antenna structure. In working, the sensor first emits FMCW and CW radio waves to the sensing area. Next, the radio waves, reflected by all targets which are in moving, micro-moving, or extremely weak moving state in the area, are converted into electrical signals by the millimeter-wave MMIC circuit in the sensor system. After that, these signals will be sent to the processor and processed through the related signal and data algorithms. Then, the target information can be solved out.
-- The millimeter-wave radar can sense the human presence, stationary and moving people within the detection area. Moreover, it can even detect static or stationary human presence such as a sleeping person. There are two ways provided to output detection result: serial port and I/O port switch quantity. Besides that, the sensor module features strong sensing reliability, high sensitivity, small size, easy to be used or embedded in applications.
+# DFR_Radar Library for Arduino
+
+<!-- [![Arduino Lint](https://github.com/MaffooClock/DFR_Radar/actions/workflows/check-arduino.yml/badge.svg)](https://github.com/MaffooClock/DFR_Radar/actions/workflows/check-arduino.yml) [![Compile Examples](https://github.com/MaffooClock/DFR_Radar/actions/workflows/compile-examples.yml/badge.svg)](https://github.com/MaffooClock/DFR_Radar/actions/workflows/compile-examples.yml) [![Arduino Library](https://www.ardu-badge.com/badge/DFR_Radar.svg?)](https://www.ardu-badge.com/DFR_Radar) [![PlatformIO Registry](https://badges.registry.platformio.org/packages/maffooclock/library/DFR_Radar.svg)](https://registry.platformio.org/libraries/maffooclock/DFR_Radar) -->
+
+This is a maintained version of the [original DFRobot_mmWave_Radar](https://github.com/DFRobotdl/DFRobot_mmWave_Radar) library.  After more than two years had passed without any commits beyond the initial commit, and issues receiving no attention, I assumed that it had become abandonware, so decided to fork this library to bring it up-to-date and get it published into the Arduino Library and PlatformIO Registry.
+
+The SEN0395 24GHz millimeter-wave Human Presence Detection sensor (available from [DFRobot.com](https://www.dfrobot.com/product-2282.html)) is a fantastic device that works well, is software-configurable, and didn't deserve to be crippled by an unfinished library.
+
 
 ## Table of Contents
 
+* [About the SEN0395](#about-the-sen0395)
 * [Installation](#installation)
 * [Methods](#methods)
-* [History](#history)
+* [Compatability](#compatability)
 * [Credits](#credits)
+
+
+
+## About the SEN0395
+
+![Front and back of DFRobot SEN0395 module](.github/photos/SEN0395.png)
+
+This 24GHz millimeter-wave radar sensor employs a [frequency-modulated continuous-wave (FMCW) radar](https://en.wikipedia.org/wiki/Continuous-wave_radar#Modulated_continuous-wave) featuring multi-mode modulation and separate transmit and receive antennas.
+
+The radar sensor can detect human presence — both in motion and stationary — within a configurable detection area.  Moreover, it can even detect static or stationary human presence such as a sleeping person. There are two ways provided to output detection result: serial port and I/O port switch quantity. Besides that, the sensor module features strong sensing reliability, high sensitivity, small size, easy to be used or embedded in applications.
+
 
 ## Installation
 
-To use this library, first download the library file, paste it into the \Arduino\libraries directory, then open the examples folder and run the demo in the folder.
+Soon, you will be able to install this library automatically from the Arduino Library or PlatformIO Registry.  I will update this README as soon as that happens.  Until then, manual installation is necessary.
+
+
+#### Arduino IDE:
+
+First, [click here](https://github.com/MaffooClock/DFR_Radar/archive/refs/heads/master.zip) to download a ZIP of this repo.  Do not un-ZIP it — leave it as a ZIP file.
+
+ 1. Click the Sketch menu
+ 2. Select "Include Library..." from the menu
+ 3. Select "Add .ZIP Library..." from the submenu
+ 4. Select the ZIP file you downloaded
+
+
+#### Platform IO:
+
+There are a couple of options (choose _one_, don't do all three):
+
+ - Add `https://github.com/MaffooClock/DFR_Radar` to the [`lib_deps`](https://docs.platformio.org/en/stable/projectconf/sections/env/options/library/lib_deps.html) line in [platformio.ini](https://docs.platformio.org/en/stable/projectconf/index.html):
+
+ - [Download a ZIP](https://github.com/MaffooClock/DFR_Radar/archive/refs/heads/master.zip) of this repo and un-zip it in the `lib` folder in your project folder.
+
+ - Clone the repo from the command line:
+ ```shell
+ cd MyProject/lib
+ git clone https://github.com/MaffooClock/DFR_Radar.git
+
+ ```
+
+
+### Include the Header
+
+Finally, just add `#include <DFR_Radar.h>` to the top of your project (below `#include <Arduino.h>` if it exists).
+
 
 ## Methods
 
-```C++
-    /**
-      @brief Constructor
-      @param Stream Software serial port interface 
-    */
-    DFRobot_mmWave_Radar(Stream *s);
+_Documentation update in progress..._
 
-    /**
-      @brief  Configure sensor detection area
-      @param parA_s The sensing area distance starting value of the first segment, unit: m 
-      @param parA_e The sensing area distance ending value of the first segment, unit: m(Must be greater than the starting value of the current sensing distance area) 
-    */
-    void DetRangeCfg(float parA_s, float parA_e);
-
-
-    /**
-      @brief  Configure sensor detection area 
-      @param parA_s The sensing area distance starting value of the first segment, unit: m
-      @param parA_e The sensing area distance ending value of the first segment, unit: m(Must be greater than the starting value of the current sensing distance area) 
-      @param parB_s The sensing area distance starting value of the second segment, unit: m(Must be greater than the ending value of the previous segment sensing area)
-      @param parB_e The sensing area distance ending value of the second segment, unit: m(Must be greater than the starting value of the current sensing area)
-    */
-    void DetRangeCfg(float parA_s, float parA_e, float parB_s, float parB_e);
-
-
-    /**
-      @brief  Configure sensor sensing area
-      @param parA_s The sensing area distance starting value of the first segment, unit: m
-      @param parA_e The sensing area distance ending value of the first segment, unit: m(Must be greater than the starting value of the current sensing distance area)
-      @param parB_s The sensing area distance starting value of the second segment, unit: m(Must be greater than the ending value of the previous segment sensing area)
-      @param parB_e The sensing area distance ending value of the second segment, unit: m(Must be greater than the starting value of the current sensing area)
-      @param parC_s The sensing area distance starting value of the third segment, unit: m(Must be greater than the ending value of the previous segment sensing area)
-      @param parC_e The sensing area distance ending value of the third segment, unit: m(Must be greater than the starting value of the current sensing area)
-    */
-    void DetRangeCfg(float parA_s, float parA_e, float parB_s, float parB_e, float parC_s, float parC_e);
-
-
-    /**
-      @brief  Configure sensor sensing area
-      @param parA_s The sensing area distance starting value of the first segment, unit: m
-      @param parA_e The sensing area distance ending value of the first segment, unit: m(Must be greater than the starting value of the current sensing distance area)
-      @param parB_s The sensing area distance starting value of the second segment, unit: m(Must be greater than the ending value of the previous segment sensing area)
-      @param parB_e The sensing area distance ending value of the second segment, unit: m(Must be greater than the starting value of the current sensing area)
-      @param parC_s The sensing area distance starting value of the third segment, unit: m(Must be greater than the ending value of the previous segment sensing area)
-      @param parC_e The sensing area distance ending value of the third segment, unit: m(Must be greater than the starting value of the current sensing area)
-      @param parD_s The sensing area distance starting value of the fourth segment, unit: m(Must be greater than the ending value of the previous segment sensing area)
-      @param parD_e The sensing area distance ending value of the fourth segment, unit: m(Must be greater than the starting value of the current sensing area)
-    */
-    void DetRangeCfg(float parA_s, float parA_e, float parB_s, float parB_e, float parC_s, float parC_e, float parD_s, float parD_e);
-
-
-    /**
-      @brief  Read whether there is anyone or something moving in the detection range
-      @return  Returning true means that there is someone or something moving in the detection range; returning false represents the oppsite. 
-    */
-    bool readPresenceDetection(void);
-
-
-    /**
-      @brief Configure sensor output delay time 
-      @param par1 When the target is detected, delay the output time of the sensing result, range: 0~1638.375, unit: s 
-      @param par2 When the target disappears, delay the output time of the sensing result, range: 0~1638.375, unit: s 
-    */
-    void OutputLatency(float par1, float par2);
-
-
-    /**
-      @brief Restore the sensor current configuration to the factory default value  
-    */
-    void factoryReset(void);
-```
 
 ## Compatibility
 
-| MCU           | Work Well | Work Wrong | Untested | Remarks |
-| ------------- | :-------: | :--------: | :------: | ------- |
-| Arduino uno   |     √     |            |          |         |
-| Mega2560      |     √     |            |          |         |
-| Leonardo      |           |            |      √   |         |
-| ESP32         |     √     |            |          |         |
-|               |           |            |          |         |
-
-
-## History
-
-- data 2020-03-25
-- version V1.0
+| **MCU**                         | **Tested - Works** | **Tested - Doesn't Work** |   **Untested**   | **Remarks** |
+|---------------------------------|:------------------:|:-------------------------:|:----------------:|-------------|
+| Arduino Uno (ATmega328P)        | :white_check_mark: |                           |                  |             |
+| Arduino Nano Every (ATMega4809) | :white_check_mark: |                           |                  |             |
+| Arduino Mega2560                | :white_check_mark: |                           |                  |             |
+| Arduino Leonardo (ATmega32u4)   |                    |                           |:heavy_check_mark:|             |
+| ESP32                           | :white_check_mark: |                           |                  |             |
 
 
 ## Credits
 
-Written by huyujie(yujie.hu@dfrobot.com), 2020. (Welcome to our [website](https://www.dfrobot.com/))
+Originally written by huyujie (yujie.hu@dfrobot.com) in 2020 and published at [DFRobotdl/DFRobot_mmWave_Radar](https://github.com/DFRobotdl/DFRobot_mmWave_Radar).
 
-# DFRobot_mmWave_Radar
+Forked and updated by [Matthew Clark](https://github.com/MaffooClock) in November 2023.
+
