@@ -35,6 +35,11 @@
       "name": "Basic Example with Digital Input",
       "base": "examples/Basic-DigitalTrigger",
       "files": [ "Basic-DigitalTrigger.ino" ]
+    },
+    {
+      "name": "Direct Serial",
+      "base": "examples/DirectSerial",
+      "files": [ "DirectSerial.ino" ]
     }
   ],
   "frameworks": "arduino",
