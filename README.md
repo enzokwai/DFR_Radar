@@ -2,8 +2,7 @@
 
 <!-- [![Arduino Lint](https://github.com/MaffooClock/DFR_Radar/actions/workflows/check-arduino.yml/badge.svg)](https://github.com/MaffooClock/DFR_Radar/actions/workflows/check-arduino.yml) -->
 <!-- [![Compile Examples](https://github.com/MaffooClock/DFR_Radar/actions/workflows/compile-examples.yml/badge.svg)](https://github.com/MaffooClock/DFR_Radar/actions/workflows/compile-examples.yml) -->
-<!-- [![Arduino Library](https://www.ardu-badge.com/badge/DFR_Radar.svg?)](https://www.ardu-badge.com/DFR_Radar) -->
-[![PlatformIO Registry](https://badges.registry.platformio.org/packages/maffooclock/library/DFR_Radar.svg)](https://registry.platformio.org/libraries/maffooclock/DFR_Radar)
+[![Arduino Library](https://www.ardu-badge.com/badge/DFR_Radar.svg?)](https://www.ardu-badge.com/DFR_Radar)  [![PlatformIO Registry](https://badges.registry.platformio.org/packages/maffooclock/library/DFR_Radar.svg)](https://registry.platformio.org/libraries/maffooclock/DFR_Radar)
 
 This is a maintained version of the [original DFRobot_mmWave_Radar](https://github.com/DFRobotdl/DFRobot_mmWave_Radar) library.  After more than two years had passed without any commits beyond the initial commit, and issues receiving no attention, I assumed that it had become abandonware, so decided to fork this library to bring it up-to-date and get it published into the Arduino Library and PlatformIO Registry.
 
@@ -30,17 +29,21 @@ The radar sensor can detect human presence — both in motion and stationary —
 
 ## Installation
 
-PlatformIO users can install the library from the registry, but it is not yet available in the Arduino Library (coming soon!), so Arduino IDE users will have to install manually for now.
+This library is available in both the Arduino Library Manager and the PlatformIO Registry.
 
 
 #### Arduino IDE:
 
-First, [click here](https://github.com/MaffooClock/DFR_Radar/archive/refs/heads/master.zip) to download a ZIP of this repo.  Do not un-ZIP it — leave it as a ZIP file.
+There are multiple ways, but three of those are below (pick **one**, don't do all three!):
 
- 1. Click the Sketch menu
- 2. Select "Include Library..." from the menu
- 3. Select "Add .ZIP Library..." from the submenu
- 4. Select the ZIP file you downloaded
+ - Search the Library Manager for `DFR_Radar`
+
+ - Use the command line interface:
+   ```shell
+   arduino-cli lib install DFR_Radar@1.0.0
+   ```
+
+ -  Manual install: download the [latest release](https://github.com/MaffooClock/DFR_Radar/releases/latest), then see the documentation on [Importing a .zip Library](https://docs.arduino.cc/software/ide-v1/tutorials/installing-libraries#importing-a-zip-library).
 
 
 #### PlatformIO:
