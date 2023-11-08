@@ -250,9 +250,9 @@ class DFR_Radar
      * @brief Read complete data packet
      *
      * @note The packet should be 15 bytes long and look like this:
-     *         `$JYBSS,1, , , *`.
-     *       The first field is presence detection (0 or 1), and
-     *       the remaining three fields will just be spaces.
+     *         `$JYBSS,1, , , *`
+     *       The first field is presence detection (0 or 1), and the
+     *       remaining three fields are reserved (always be spaces).
      *
      * @param buffer Store the read data
      *
