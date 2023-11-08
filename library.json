@@ -21,6 +21,21 @@
   },
   "headers": "DFR_Radar.h",
   "examples": [
+    {
+      "name": "Basic Example",
+      "base": "examples/Basic",
+      "files": [ "Basic.ino" ]
+    },
+    {
+      "name": "Basic Example with Software Serial",
+      "base": "examples/Basic-SoftwareSerial",
+      "files": [ "Basic-SoftwareSerial.ino" ]
+    },
+    {
+      "name": "Basic Example with Digital Input",
+      "base": "examples/Basic-DigitalTrigger",
+      "files": [ "Basic-DigitalTrigger.ino" ]
+    }
   ],
   "frameworks": "arduino",
   "platforms": "*",
