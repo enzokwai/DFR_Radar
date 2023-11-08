@@ -1,8 +1,16 @@
 name: Compile Examples
 
 on:
-  - push
-  - pull_request
+  pull_request:
+    paths:
+      - ".github/workflows/compile-examples.yml"
+      - "examples/**"
+      - "src/**"
+  push:
+    paths:
+      - ".github/workflows/compile-examples.yml"
+      - "examples/**"
+      - "src/**"
 
 jobs:
   compile-examples:
@@ -10,12 +18,28 @@ jobs:
 
     env:
       SKETCHES_REPORTS_PATH: sketches-reports
+      UNIVERSAL_LIBRARIES: |
+        - source-path: ./
 
     strategy:
       matrix:
-        fqbn:
-          - arduino:esp32:nano_nora
-          - arduino:megaavr:nona4809
+        board:
+          - fqbn: arduino:megaavr:nona4809
+            type: arduino_megaavr
+          - fqbn: arduino:esp32:nano_nora
+            type: arduino_esp32
+
+        include:
+          - board:
+              type: arduino_megaavr
+            platforms: |
+              - name: arduino:megaavr
+          - board:
+              type: arduino_esp32
+            platforms: |
+              - name: arduino:esp32
+            libraries: |
+              - name: EspSoftwareSerial
 
     steps:
       - name: Checkout repository
@@ -24,13 +48,14 @@ jobs:
       - name: Compile sketches
         uses: arduino/compile-sketches@v1.1.0
         with:
-          fqbn: ${{ matrix.fqbn }}
+          platforms: ${{ matrix.platforms }}
+          fqbn: ${{ matrix.board.fqbn }}
+          libraries: |
+            ${{ env.UNIVERSAL_LIBRARIES }}
+            ${{ matrix.libraries }}
 
           sketch-paths: |
             - examples
-
-          libraries: |
-            - source-path: ./
 
           enable-deltas-report: true
           sketches-report-path: ${{ env.SKETCHES_REPORTS_PATH }}

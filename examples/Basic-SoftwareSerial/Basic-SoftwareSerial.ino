@@ -17,9 +17,16 @@
 #include <DFR_Radar.h>
 #include <SoftwareSerial.h>
 
-// Create a software serial port
-// First argument is receive, second it transmit
-SoftwareSerial sensorSerial( 3, 2 );
+const byte rxPin = 2;
+const byte txPin = 3;
+
+#ifdef ESP32
+  EspSoftwareSerial::UART sensorSerial;
+#else
+  // Create a software serial port
+  // First argument is receive, second is transmit
+  SoftwareSerial sensorSerial( rxPin, txPin );
+#endif
 
 // Create a DFR_Radar instance
 DFR_Radar sensor( &sensorSerial );
@@ -28,8 +35,12 @@ void setup()
 {
   Serial.begin( 9600 );
   
-  // The DFRobot device is factory-set for 115200 baud
-  sensorSerial.begin( 115200 );
+  #ifdef ESP32
+    sensorSerial.begin( 115200, SWSERIAL_8N1, rxPin, txPin );
+  #else
+    // The DFRobot device is factory-set for 115200 baud
+    sensorSerial.begin( 115200 );
+  #endif
   
   // Restore to the factory settings -- it's not necessary to do this unless needed
   sensor.factoryReset();
