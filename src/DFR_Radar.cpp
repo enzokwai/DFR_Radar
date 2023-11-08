@@ -73,6 +73,31 @@ bool DFR_Radar::checkPresence()
   return ( data[7] == '1' );
 }
 
+bool DFR_Radar::setLockout( float time )
+{
+  if( time < 0.1 || time > 255 )
+    return false;
+
+  char _comSetInhibit[15] = {0};
+  sprintf( _comSetInhibit, comSetInhibit, time );
+
+  setConfig( _comSetInhibit );
+
+  return true;
+}
+
+bool DFR_Radar::setTriggerLevel( PinStatus triggerLevel )
+{
+  if( triggerLevel != HIGH || triggerLevel != LOW )
+    return false;
+
+  char _comSetGpioMode[16] = {0};
+  sprintf( _comSetGpioMode, comSetGpioMode, triggerLevel );
+
+  setConfig( _comSetGpioMode );
+
+  return true;
+}
 
 bool DFR_Radar::setDetectionArea( float rangeStart, float rangeEnd )
 {
@@ -279,6 +304,11 @@ void DFR_Radar::start()
 void DFR_Radar::stop()
 {
   sendCommand( comStop );
+}
+
+void DFR_Radar::reboot()
+{
+  sendCommand( comResetSystem );
 }
 
 void DFR_Radar::sendCommand( const char *command )

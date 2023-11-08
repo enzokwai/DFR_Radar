@@ -137,6 +137,28 @@ class DFR_Radar
     bool checkPresence( void );
 
     /**
+     * @brief Sets a delay between when the presence detection resets and when it can trigger again.
+     *
+     * @note Used to prevent short-cycling (re-triggering immediately after a rest).
+     *
+     * @param time  Time in seconds after the presence detection has reset before it can be triggered again.
+     *              Range is 0.1 - 255; factory default is 1
+     *
+     * @return false if the value is invalid (no changes made), true otherwise
+     */
+    bool setLockout( float time );
+
+    /**
+     * @brief Set whether the IO2 pin is HIGH or LOW when triggered.
+     *
+     * @param triggerLevel  HIGH = Vcc when triggered, Ground when idle (factory default)
+     *                      LOW  = Ground when triggered, Vcc when idle
+     *
+     * @return false if the value is invalid (no changes made), true otherwise
+     */
+    bool setTriggerLevel( PinStatus triggerLevel );
+
+    /**
      * @brief Start the sensor.
      *
      */
@@ -147,6 +169,12 @@ class DFR_Radar
      *
      */
     void stop( void );
+
+    /**
+     * @brief Restart the sensor's internal software (safe; configuration is not lost or changed).
+     *
+     */
+    void reboot( void );
 
     /**
      * @brief Disable the LED
@@ -265,12 +293,15 @@ class DFR_Radar
     static const unsigned long comDelay            = 1000;
     static constexpr const char *comStop           = "sensorStop";
     static constexpr const char *comStart          = "sensorStart";
+    static constexpr const char *comResetSystem    = "resetSystem 0";
     static constexpr const char *comDetRangeCfg1   = "detRangeCfg -1 %u %u";
     static constexpr const char *comDetRangeCfg2   = "detRangeCfg -1 %u %u %u %u";
     static constexpr const char *comDetRangeCfg3   = "detRangeCfg -1 %u %u %u %u %u %u";
     static constexpr const char *comDetRangeCfg4   = "detRangeCfg -1 %u %u %u %u %u %u %u %u";
     static constexpr const char *comSetSensitivity = "setSensitivity %u";
     static constexpr const char *comOutputLatency  = "outputLatency -1 %u %u";
+    static constexpr const char *comSetGpioMode    = "setGpioMode 1 %u";
+    static constexpr const char *comSetInhibit     = "setInhibit %u";
     static constexpr const char *comSetLedMode     = "setLedMode 1 %u";
     static constexpr const char *comSensorCfgStart = "sensorCfgStart %u";
     static constexpr const char *comSaveCfg        = "saveCfg 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
