@@ -22,7 +22,23 @@ The SEN0395 24GHz millimeter-wave Human Presence Detection sensor (available fro
 
 This 24GHz millimeter-wave radar sensor employs a [frequency-modulated continuous-wave (FMCW) radar](https://en.wikipedia.org/wiki/Continuous-wave_radar#Modulated_continuous-wave) featuring multi-mode modulation and separate transmit and receive antennas.
 
-The radar sensor can detect human presence — both in motion and stationary — within a configurable detection area.  Moreover, it can even detect static or stationary human presence such as a sleeping person. There are two ways provided to output detection result: serial port and I/O port switch quantity. Besides that, the sensor module features strong sensing reliability, high sensitivity, small size, easy to be used or embedded in applications.
+The radar sensor can detect human presence within a configurable detection area, both in motion and stationary -- it can even detect a person breathing.  Whereas a person might be able to "fool" a traditional PIR motion sensor simply by remaining still, or even walking very slowly, FMCW radar can detect this easily.
+
+> [!NOTE]
+> This library is not required to make this sensor work with your Arduino.  All you need are connections to V (3.3-5V), G (Ground), and IO2 (Signal Out).  However, if you connect the RX and TX pins, you can use this library to configure various settings and tweak its behavior to suit your needs.
+
+
+### Additional Notes
+
+There are a number of things that the [official wiki page](https://wiki.dfrobot.com/mmWave_Radar_Human_Presence_Detection_SKU_SEN0395) does not address, or the information provided is incomplete or unclear, so following is a list of supplimentary bullet points:
+
+ 1. **IO2 Pin** - By default, this pin remains LOW when idle and goes HIGH when presence has been detected.  This library allows you to invert this behavior, and also provides a method for configuring delays for changes between these states, which can help prevent or reduce false-positives or short-cycling.
+
+ 2. **Power** - Make sure you use a clean and stable power supply with less than 100mV of ripple, otherwise presence detection could be affected, including false triggers.
+
+ 3. **Start-up Delay** - There's about a 5-second delay from the time the sensor is powered-on until it begins to actually sense presence.  This is due to the sensor performing initialization and self-calibration tasks, so presence detection will not occur until after this.
+
+ 4. **Triggers: Transitional vs. Sustained** - After the sensor has been triggered by presence, "micro-movements" such as breathing or even moving a finger can be enough to sustain the triggered state.  However, those same micro-movements may not be enough to fully trigger the sensor from an idle state.  The sensitivity and trigger latency settings have a significant effect on this.
 
 
 ## Installation
