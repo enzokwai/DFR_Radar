@@ -287,7 +287,7 @@ class DFR_Radar
 
     static const uint16_t readBytesTimeout         =  100;
     static const uint16_t readPacketTimeout        = 1000;
-    static const size_t packetLength               =   15;
+    static const size_t packetLength               =   16;
     static constexpr const char *packetStart       = "$JYBSS";
 
     static const unsigned long comDelay            = 1000;
