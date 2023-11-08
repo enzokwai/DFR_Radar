@@ -304,8 +304,8 @@ class DFR_Radar
     static constexpr const char *comSetInhibit     = "setInhibit %u";
     static constexpr const char *comSetLedMode     = "setLedMode 1 %u";
     static constexpr const char *comSensorCfgStart = "sensorCfgStart %u";
-    static constexpr const char *comSaveCfg        = "saveCfg 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
-    static constexpr const char *comFactoryReset   = "factoryReset 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
+    static constexpr const char *comSaveCfg        = "saveConfig";  // "saveCfg 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
+    static constexpr const char *comFactoryReset   = "resetCfg";    // "factoryReset 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
 };
 
 #endif
