@@ -17,57 +17,136 @@
 DFR_Radar::DFR_Radar( Stream *s )
 {
   sensorUART = s;
+  // isConfigured = false;
+  stopped = false;
+  multiConfig = false;
 }
 
-size_t DFR_Radar::readBytes( char *buffer, size_t length )
+bool DFR_Radar::begin()
 {
-  size_t offset = 0, remaining = length;
-  unsigned long startTime = millis();
+  /* Not sure if I want to impliment this, keeping it for future consideration...
 
-  while( remaining )
-  {
-    if( sensorUART->available() )
-    {
-      buffer[offset] = sensorUART->read();
-      offset++;
-      remaining--;
-    }
+  unsigned long startTime = millis() + startupDelay;
 
-    if( millis() - startTime > readBytesTimeout )
-      break;
-  }
+  // Give the sensor time to start up just in case this method is called too soon.
+  //
+  // There's probably a smarter way to do this.  Factory default configuration will
+  // have the sensor dumping out $JYBSS messages once per second, so that could be
+  // an easy way to tell that it's "ready".  But if the sensor is configured to send
+  // these only when queried, or when an presence event occurs, or if the interval
+  // is set too long, then this won't really work.
+  //
+  // Another way might be to send a `sensorStart` and see if 1) it complains about
+  // not being ready, or 2) it responds with "sensor started already" and "Error",
+  // or 3) actually starts?
 
-  return offset;
+  while( millis() < startTime )
+    yield();
+
+  if( !stop() )
+    return false;
+
+  // Disable command echoing (less response data that we have to parse through)
+  sendCommand( comSetEcho );
+
+  // Disable periodic $JYBSS messages (we will query for them)
+  sendCommand( comSetUartOutput );
+
+  if( !saveConfig() )
+    return false;
+
+  if( !start() )
+    return false;
+
+  isConfigured = true;
+
+  */
+
+  return true;
 }
 
-bool DFR_Radar::readPacket( char *buffer )
+size_t DFR_Radar::readLines( char *buffer, size_t lineCount )
 {
-  unsigned long startTime = millis();
-  bool result = false;
+  unsigned long timeLimit = millis() + readPacketTimeout;
+  size_t offset = 0, linesLeft = lineCount;
 
-  while( !result )
+  while( linesLeft && millis() < timeLimit )
   {
-    if( millis() - startTime > readPacketTimeout )
-      break;
+    if( sensorUART->available() <= 0 )
+      continue;
 
-    if( readBytes( buffer, packetLength ) == packetLength )
-      if( strncmp( packetStart, buffer, strlen( packetStart ) ) == 0 )
-        result = true;
+    char c = sensorUART->read();
+
+    if( c == '\r' )
+      continue;
+
+    buffer[offset++] = c;
+
+    if( c == '\n' )
+      linesLeft--;
   }
 
-  buffer[packetLength] = '\0';
-
-  return result;
+  return strlen( buffer );
 }
 
 bool DFR_Radar::checkPresence()
 {
-  char data[packetLength] = {0};
+  char packet[packetLength] = {0};
 
-  // Should contain something like this: $JYBSS,1, , , *
-  // ...with parameter 1 (character 7) being either 0 or 1.
+  // Factory default settings have $JYBSS messages sent once per second,
+  // but we won't want to wait; this will prompt for status immediately
+  sensorUART->write( comGetOutput );
 
-  if( !readPacket( data ) )
+  /**
+   * Get the response immediately after sending the command.
+   *
+   * If command echoing is enabled, there should be three lines:
+   *   1. the "getOutput 1" echoed back
+   *   2. a "Done" status
+   *   3. the "leapMMW:/>" response followed by the $JYBSS data we want
+   *
+   * If command echoing is disabled, there should be two lines:
+   *   1. a "Done" status
+   *   2. the $JYBSS data we want
+   *
+   * Factory default is command echoing on (might change this in `begin()`)
+   */
+  size_t length = readLines( packet, 3 );
+
+  if( !length )
+    return false;
+
+  const size_t expectedLength = 16;
+  char data[expectedLength] = {0};
+  uint8_t offset = 0;
+  bool startCharacterFound = false, endCharacterFound = false;
+
+  /**
+   * Parse through the packet until we find a "$", and
+   * then start capturing characters until we find a "*"
+   *
+   * We're expecting to get something like: $JYBSS,1, , , *
+   */
+  for( uint8_t i = 0; i < length; i++ )
+  {
+    char c = packet[i];
+
+    if( c == '$' )
+      startCharacterFound = true;
+
+    if( !startCharacterFound )
+      continue;
+
+    if( c == '*' )
+      endCharacterFound = true;
+
+    data[offset++] = c;
+
+    if( endCharacterFound || offset == expectedLength )
+      break;
+  }
+
+  if( !startCharacterFound || !endCharacterFound )
     return false;
 
   return ( data[7] == '1' );
@@ -81,9 +160,7 @@ bool DFR_Radar::setLockout( float time )
   char _comSetInhibit[15] = {0};
   sprintf( _comSetInhibit, comSetInhibit, time );
 
-  setConfig( _comSetInhibit );
-
-  return true;
+  return setConfig( _comSetInhibit );
 }
 
 bool DFR_Radar::setTriggerLevel( PinStatus triggerLevel )
@@ -94,9 +171,7 @@ bool DFR_Radar::setTriggerLevel( PinStatus triggerLevel )
   char _comSetGpioMode[16] = {0};
   sprintf( _comSetGpioMode, comSetGpioMode, triggerLevel );
 
-  setConfig( _comSetGpioMode );
-
-  return true;
+  return setConfig( _comSetGpioMode );
 }
 
 bool DFR_Radar::setDetectionArea( float rangeStart, float rangeEnd )
@@ -104,6 +179,7 @@ bool DFR_Radar::setDetectionArea( float rangeStart, float rangeEnd )
   if( rangeStart < 0 || rangeEnd < 0 || rangeEnd < rangeStart )
     return false;
 
+  // Convert meters into 15cm units
   uint8_t _rangeStart = rangeStart / 0.15;
   uint8_t _rangeEnd   = rangeEnd / 0.15;
 
@@ -113,9 +189,7 @@ bool DFR_Radar::setDetectionArea( float rangeStart, float rangeEnd )
   char _comDetRangeCfg[23] = {0};
   sprintf( _comDetRangeCfg, comDetRangeCfg1, _rangeStart, _rangeEnd );
 
-  setConfig( _comDetRangeCfg );
-
-  return true;
+  return setConfig( _comDetRangeCfg );
 }
 
 bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float rangeB_Start, float rangeB_End )
@@ -129,6 +203,7 @@ bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float ra
   if( rangeB_Start < rangeA_End )
     return false;
 
+  // Convert meters into 15cm units
   uint8_t _rangeA_Start = rangeA_Start / 0.15;
   uint8_t _rangeA_End   = rangeA_End / 0.15;
   uint8_t _rangeB_Start = rangeB_Start / 0.15;
@@ -140,9 +215,7 @@ bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float ra
   char _comDetRangeCfg[31] = {0};
   sprintf( _comDetRangeCfg, comDetRangeCfg2, _rangeA_Start, _rangeA_End, _rangeB_Start, _rangeB_End );
 
-  setConfig( _comDetRangeCfg );
-
-  return true;
+  return setConfig( _comDetRangeCfg );
 }
 
 bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float rangeB_Start, float rangeB_End, float rangeC_Start, float rangeC_End )
@@ -159,6 +232,7 @@ bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float ra
   if( rangeB_Start < rangeA_End || rangeC_Start < rangeB_End )
     return false;
 
+  // Convert meters into 15cm units
   uint8_t _rangeA_Start = rangeA_Start / 0.15;
   uint8_t _rangeA_End   = rangeA_End / 0.15;
   uint8_t _rangeB_Start = rangeB_Start / 0.15;
@@ -172,9 +246,7 @@ bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float ra
   char _comDetRangeCfg[39] = {0};
   sprintf( _comDetRangeCfg, comDetRangeCfg3, _rangeA_Start, _rangeA_End, _rangeB_Start, _rangeB_End, _rangeC_Start, _rangeC_End );
 
-  setConfig( _comDetRangeCfg );
-
-  return true;
+  return setConfig( _comDetRangeCfg );
 }
 
 bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float rangeB_Start, float rangeB_End, float rangeC_Start, float rangeC_End, float rangeD_Start, float rangeD_End )
@@ -194,6 +266,7 @@ bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float ra
   if( rangeB_Start < rangeA_End || rangeC_Start < rangeB_End || rangeD_Start < rangeC_End )
     return false;
 
+  // Convert meters into 15cm units
   uint8_t _rangeA_Start = rangeA_Start / 0.15;
   uint8_t _rangeA_End   = rangeA_End / 0.15;
   uint8_t _rangeB_Start = rangeB_Start / 0.15;
@@ -209,9 +282,22 @@ bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float ra
   char _comDetRangeCfg[47] = {0};
   sprintf( _comDetRangeCfg, comDetRangeCfg4, _rangeA_Start, _rangeA_End, _rangeB_Start, _rangeB_End, _rangeC_Start, _rangeC_End, _rangeD_Start, _rangeD_End );
 
-  setConfig( _comDetRangeCfg );
+  return setConfig( _comDetRangeCfg );
+}
 
-  return true;
+
+bool DFR_Radar::setTriggerLatency( float confirmationDelay, float disappearanceDelay )
+{
+  if( confirmationDelay < 0 || confirmationDelay > 100 )
+    return false;
+
+  if( disappearanceDelay < 0 || disappearanceDelay > 1500 )
+    return false;
+
+  char _comSetLatency[20] = {0};
+  sprintf( _comSetLatency, comSetLatency, confirmationDelay , disappearanceDelay );
+
+  return setConfig( _comSetLatency );
 }
 
 
@@ -220,6 +306,7 @@ bool DFR_Radar::setOutputLatency( float triggerDelay, float resetDelay )
   if( triggerDelay < 0 || resetDelay < 0 )
     return false;
 
+  // Convert seconds into 25ms units
   uint16_t _triggerDelay = triggerDelay * 1000 / 25;
   uint16_t _resetDelay   = resetDelay * 1000 / 25;
 
@@ -229,9 +316,7 @@ bool DFR_Radar::setOutputLatency( float triggerDelay, float resetDelay )
   char _comOutputLatency[29] = {0};
   sprintf( _comOutputLatency, comOutputLatency, _triggerDelay , _resetDelay );
 
-  setConfig( _comOutputLatency );
-
-  return true;
+  return setConfig( _comOutputLatency );
 }
 
 bool DFR_Radar::setSensitivity( uint8_t level )
@@ -242,68 +327,114 @@ bool DFR_Radar::setSensitivity( uint8_t level )
   char _comSetSensitivity[17] = {0};
   sprintf( _comSetSensitivity, comSetSensitivity, level );
 
-  setConfig( _comSetSensitivity );
-
-  return true;
+  return setConfig( _comSetSensitivity );
 }
 
-void DFR_Radar::disableLED()
+bool DFR_Radar::disableLED()
 {
-  configureLED( true );
+  return configureLED( true );
 }
 
-void DFR_Radar::enableLED()
+bool  DFR_Radar::enableLED()
 {
-  configureLED( false );
+  return configureLED( false );
 }
 
-void DFR_Radar::configureLED( bool disabled )
+bool DFR_Radar::configureLED( bool disabled )
 {
   char _comSetLedMode[15] = {0};
   sprintf( _comSetLedMode, comSetLedMode, disabled );
 
-  setConfig( _comSetLedMode );
+  return setConfig( _comSetLedMode );
 }
 
-void DFR_Radar::enableAutoStart()
+bool DFR_Radar::factoryReset()
 {
-  configureAutoStart( true );
+  if( !stop() )
+    return false;
+
+  return sendCommand( comFactoryReset );
 }
 
-void DFR_Radar::disableAutoStart()
+bool DFR_Radar::configBegin()
 {
-  configureAutoStart( false );
+  if( multiConfig )
+    return true;
+
+  if( !stop() )
+    return false;
+
+  multiConfig = true;
+
+  return true;
 }
 
-void DFR_Radar::configureAutoStart( bool autoStart )
+bool DFR_Radar::configEnd()
 {
-  char _comSensorCfgStart[17] = {0};
-  sprintf( _comSensorCfgStart, comSensorCfgStart, autoStart );
+  if( !multiConfig )
+    return false;
 
-  setConfig( _comSensorCfgStart );
+  multiConfig = false;
+
+  if( !saveConfig() )
+    return false;
+
+  if( !start() )
+    return false;
+
+  return true;
 }
 
-void DFR_Radar::factoryReset()
+bool DFR_Radar::setConfig( const char *command )
 {
-  setConfig( comFactoryReset );
+  if( multiConfig )
+  {
+    return sendCommand( command );
+  }
+  else
+  {
+    if( !stop() )
+      return false;
+
+    if( !sendCommand( command ) )
+      return false;
+
+    bool saved = saveConfig();
+
+    if( !start() )
+      return false;
+
+    return saved;
+  }
 }
 
-void DFR_Radar::setConfig( const char *command )
+bool DFR_Radar::saveConfig()
 {
-  stop();
-  sendCommand( command );
-  saveConfig();
-  start();
+  return sendCommand( comSaveCfg );
 }
 
-void DFR_Radar::start()
+bool DFR_Radar::start()
 {
-  sendCommand( comStart );
+  if( !stopped )
+    return true;
+
+  if( !sendCommand( comStart ) )
+    return false;
+
+  stopped = false;
+  return true;
 }
 
-void DFR_Radar::stop()
+bool DFR_Radar::stop()
 {
-  sendCommand( comStop );
+  if( stopped )
+    return true;
+
+  if( !sendCommand( comStop ) )
+    return false;
+
+  stopped = true;
+  return true;
 }
 
 void DFR_Radar::reboot()
@@ -311,13 +442,55 @@ void DFR_Radar::reboot()
   sendCommand( comResetSystem );
 }
 
-void DFR_Radar::sendCommand( const char *command )
+bool DFR_Radar::sendCommand( const char *command )
 {
-  sensorUART->write( command );
-  delay( comDelay );
-}
+  char responseBuffer[32] = {0};
+  unsigned long timeout = millis() + comTimeout;
 
-void DFR_Radar::saveConfig()
-{
-  sendCommand( comSaveCfg );
+  static const size_t successLength = strlen( comResponseSuccess );
+  static const size_t failLength = strlen( comResponseFail );
+  static const size_t minResponseLength = min( successLength, failLength );
+
+  const size_t commandLength = strlen( command );
+  const size_t minLength = min( commandLength, minResponseLength );
+
+  // Make sure we have exactly enough time
+  sensorUART->setTimeout( comTimeout );
+
+  // Send the command...
+  sensorUART->write( command );
+
+  // ...then wait for a response
+  while( millis() < timeout )
+  {
+    if( sensorUART->available() <= 0 )
+      continue;
+
+    // Start with an empty buffer
+    responseBuffer[0] = '\0';
+
+    // Read a whole line
+    size_t responseLength = sensorUART->readBytesUntil( '\n', responseBuffer, sizeof( responseBuffer ) );
+
+    // We got something shorter than anything we're expecting, so try again
+    if( responseLength < minLength )
+      continue;
+
+    // Check if that line is an echo of the original command
+    if( strncmp( command, responseBuffer, commandLength ) == 0 )
+      continue;
+
+    // ...or if that line says "Done"
+    if( strncmp( comResponseSuccess, responseBuffer, successLength ) == 0 )
+      return true;
+
+    // ...or if that line says "Error"
+    if( strncmp( comResponseFail, responseBuffer, failLength ) == 0 )
+      return false;
+
+    // ...we got nothing we expected, so try again
+  }
+
+  // We've timed out
+  return false;
 }

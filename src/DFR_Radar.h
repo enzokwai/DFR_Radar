@@ -17,6 +17,9 @@
 
 #include <Arduino.h>
 
+#ifdef ESP32
+  #define PinStatus uint8_t
+#endif
 
 class DFR_Radar
 {
@@ -27,6 +30,13 @@ class DFR_Radar
       * @param Stream  Software serial port interface
       */
     DFR_Radar( Stream *s );
+
+    /**
+     * @brief Not currently implemented
+     *
+     * @return true
+     */
+    bool begin( void );
 
     /**
      * @brief Configure sensor detection for a single range
@@ -119,6 +129,18 @@ class DFR_Radar
     bool setSensitivity( uint8_t level );
 
     /**
+     * @brief Configure delays that translate actual presence activity to sensor assertion of presence
+     *
+     * @note A longer confirmation delay can reduce false positives.  A longer disappearance delay can bridge gaps between presence events.
+     *
+     * @param confirmationDelay  Time in seconds of continuous presence activity before the sensor actually asserts presence; factory default is 0.025s
+     * @param disappearanceDelay Time in seconds without any presence activity before desserting presence; factory default is 5s
+     *
+     * @return false if either delay value is invalid (no changes made), true otherwise
+     */
+    bool setTriggerLatency( float confirmationDelay, float disappearanceDelay );
+
+    /**
      * @brief Configure delays between state changes on output (IO2)
      *
      * @param triggerDelay  Time in seconds after the sensor has been triggered before setting output HIGH; factory default is 2.5s
@@ -131,15 +153,15 @@ class DFR_Radar
     /**
      * @brief Check if the sensor is detecting presence
      *
-     * @return true if presence is currently being detected
-     * @return false if no presence or reading sensor failed
+     * @return true if presence is currently being detected;
+     *         false if no presence or reading sensor failed
      */
     bool checkPresence( void );
 
     /**
      * @brief Sets a delay between when the presence detection resets and when it can trigger again.
      *
-     * @note Used to prevent short-cycling (re-triggering immediately after a rest).
+     * @note Used to prevent short-cycling (re-triggering immediately after a reset).
      *
      * @param time  Time in seconds after the presence detection has reset before it can be triggered again.
      *              Range is 0.1 - 255; factory default is 1
@@ -159,16 +181,20 @@ class DFR_Radar
     bool setTriggerLevel( PinStatus triggerLevel );
 
     /**
-     * @brief Start the sensor.
+     * @brief Start the sensor
      *
+     * @return true if sensor started (or was already started);
+     *         false if sensor failed to start
      */
-    void start( void );
+    bool start( void );
 
     /**
      * @brief Stop the sensor
      *
+     * @return true if sensor stopped (or was already stopped);
+     *         false if sensor failed to stop
      */
-    void stop( void );
+    bool stop( void );
 
     /**
      * @brief Restart the sensor's internal software (safe; configuration is not lost or changed).
@@ -179,14 +205,16 @@ class DFR_Radar
     /**
      * @brief Disable the LED
      *
+     * @return true if command was successful
      */
-    void disableLED( void );
+    bool disableLED( void );
 
     /**
      * @brief Enable the LED
      *
+     * @return true if command was successful
      */
-    void enableLED( void );
+    bool enableLED( void );
 
     /**
      * @brief Set whether LED is enabled.
@@ -194,89 +222,81 @@ class DFR_Radar
      * @note Called by `disableLED()` and `enableLED()`
      *
      * @param disabled true if LED should be disabled, false for enabled
+     *
+     * @return true if command was successful
      */
-    void configureLED( bool disabled );
+    bool configureLED( bool disabled );
 
     /**
-     * @brief Enable automatic start on power-up.
+     * @brief Allows setting multiple configuration options without
+     *        stopping/saving/re-starting with each one.  Make sure
+     *        to call `configEnd()` after making changes.
      *
+     * @return false if the sensor failed to stop (multi-config mode will be disabled), true otherwise
      */
-    void enableAutoStart();
+    bool configBegin( void );
 
     /**
-     * @brief Disable automatic start on power-up.
+     * @brief Allows setting multiple configuration options without
+     *        stopping/saving/re-starting with each one.  Must call
+     *        `configBegin()` first.
      *
-     * @note Will need to call `start()` at runtime.
-     *
+     * @return false if multi-config mode isn't enabled (forgot to call `configBegin()` first or it failed),
+     *         or if saving or re-starting failed; true otherwise
      */
-    void disableAutoStart();
-
-    /**
-     * @brief Set whether sensor will start automatically on power-up.
-     *
-     * @note Called by `disableAutoStart()` and `enableAutoStart()`
-     *
-     * @param autoStart true if sensor should start immediately after power-up,
-     *                  false if not (will need to call `start()` at runtime)
-     */
-    void configureAutoStart( bool autoStart );
-
-    /**
-     * @brief Commits configuration data to flash
-     *
-     */
-    void saveConfig();
+    bool configEnd( void );
 
     /**
      * @brief Restore the sensor configuration to factory default settings.
      *
+     * @return true if command was successful;
+     *         false if the sensor failed to stop or if the ecommand failed
      */
-    void factoryReset( void );
+    bool factoryReset( void );
 
 
   private:
 
     /**
-     * @brief Read data from the serial port
-     *
-     * @param buffer Store the read data
-     * @param length The number of bytes to read
-     *
-     * @return the actual length of bytes read
-     */
-    size_t readBytes( char *buffer, size_t length );
-
-    /**
-     * @brief Read complete data packet
-     *
-     * @note The packet should be 15 bytes long and look like this:
-     *         `$JYBSS,1, , , *`
-     *       The first field is presence detection (0 or 1), and the
-     *       remaining three fields are reserved (always be spaces).
+     * @brief Read a line (or more) from the UART port
      *
      * @param buffer Store the read data
      *
-     * @return true if successful, false otherwise
+     * @return length of characters captured
      */
-    bool readPacket( char *buffer );
+    size_t readLines( char *buffer, size_t lineCount = 1 );
 
     /**
-     * @brief Executes a command string after first stopping the sensor, then
-     *        afterwards saves the configuration and re-starts the sensor
+     * @brief Executes a command string after first stopping the sensor, then afterwards
+     *        saves the configuration and re-starts the sensor.
      *
-     * @note Each of the methods called by this one also call `sendCommand()`, which
-     *       will delay for `comDelay` -- thus, this method will delay for `4 x comDelay`
+     * @details If multi-config mode is enabled (`configBegin()` was called earlier),
+     *          this this method only executes the command string, and `configEnd()`
+     *          must be called to save the configuration and re-start the sensor.
      *
      * @param command A command string generated by one of the configuration methods
+     *
+     * @return true if command was successful;
+     *         false if sensor failed to stop or re-start, command failed, or save failed
      */
-    void setConfig( const char *command );
+    bool setConfig( const char *command );
 
     /**
-     * @brief Writes a command string to the sensor UART port, then delays for `comDelay`
+     * @brief Commits configuration data to flash
+     *
+     * @return true if command was successful
+     */
+    bool saveConfig( void );
+
+    /**
+     * @brief Writes a command string to the sensor UART port and waits for response
      *
      * @param command A command string generated by one of the other config/command methods
+     *
+     * @return true if response was "Done";
+     *         false if "Error" or timeout
      */
-    void sendCommand( const char *command );
+    bool sendCommand( const char *command );
 
     /**
      * @brief The serial port (hardware or software) to use for communicating with the sensor
@@ -284,28 +304,36 @@ class DFR_Radar
      */
     Stream *sensorUART;
 
+    // bool isConfigured;
+    bool stopped;
+    bool multiConfig;
 
-    static const uint16_t readBytesTimeout         =  100;
-    static const uint16_t readPacketTimeout        = 1000;
-    static const size_t packetLength               =   16;
-    static constexpr const char *packetStart       = "$JYBSS";
+    static const uint16_t readPacketTimeout         =  100;
+    static const size_t packetLength                =   64;
 
-    static const unsigned long comDelay            = 1000;
-    static constexpr const char *comStop           = "sensorStop";
-    static constexpr const char *comStart          = "sensorStart";
-    static constexpr const char *comResetSystem    = "resetSystem 0";
-    static constexpr const char *comDetRangeCfg1   = "detRangeCfg -1 %u %u";
-    static constexpr const char *comDetRangeCfg2   = "detRangeCfg -1 %u %u %u %u";
-    static constexpr const char *comDetRangeCfg3   = "detRangeCfg -1 %u %u %u %u %u %u";
-    static constexpr const char *comDetRangeCfg4   = "detRangeCfg -1 %u %u %u %u %u %u %u %u";
-    static constexpr const char *comSetSensitivity = "setSensitivity %u";
-    static constexpr const char *comOutputLatency  = "outputLatency -1 %u %u";
-    static constexpr const char *comSetGpioMode    = "setGpioMode 1 %u";
-    static constexpr const char *comSetInhibit     = "setInhibit %u";
-    static constexpr const char *comSetLedMode     = "setLedMode 1 %u";
-    static constexpr const char *comSensorCfgStart = "sensorCfgStart %u";
-    static constexpr const char *comSaveCfg        = "saveConfig";  // "saveCfg 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
-    static constexpr const char *comFactoryReset   = "resetCfg";    // "factoryReset 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
+    static const unsigned long startupDelay         = 2000;
+
+    static const unsigned long comTimeout           = 1000;
+    static constexpr const char *comStop            = "sensorStop";
+    static constexpr const char *comStart           = "sensorStart";
+    static constexpr const char *comResetSystem     = "resetSystem 0";
+    static constexpr const char *comDetRangeCfg1    = "detRangeCfg -1 %u %u";
+    static constexpr const char *comDetRangeCfg2    = "detRangeCfg -1 %u %u %u %u";
+    static constexpr const char *comDetRangeCfg3    = "detRangeCfg -1 %u %u %u %u %u %u";
+    static constexpr const char *comDetRangeCfg4    = "detRangeCfg -1 %u %u %u %u %u %u %u %u";
+    static constexpr const char *comSetSensitivity  = "setSensitivity %u";
+    static constexpr const char *comOutputLatency   = "outputLatency -1 %u %u";
+    static constexpr const char *comSetLatency      = "setLatency %u %u";
+    static constexpr const char *comSetGpioMode     = "setGpioMode 1 %u";
+    static constexpr const char *comGetOutput       = "getOutput 1";
+    static constexpr const char *comSetInhibit      = "setInhibit %u";
+    static constexpr const char *comSetLedMode      = "setLedMode 1 %u";
+    // static constexpr const char *comSetUartOutput   = "setUartOutput 1 1 0 1501";
+    static constexpr const char *comSetEcho         = "setEcho 0";
+    static constexpr const char *comResponseSuccess = "Done";
+    static constexpr const char *comResponseFail    = "Error";
+    static constexpr const char *comSaveCfg         = "saveConfig";  // "saveCfg 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
+    static constexpr const char *comFactoryReset    = "resetCfg";    // "factoryReset 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
 };
 
 #endif

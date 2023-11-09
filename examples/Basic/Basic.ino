@@ -57,10 +57,7 @@ void loop()
    * be missed.
    */
 
-  // Query the presence detection status -- this is
-  // kind of slow since it communicates via serial.
-  // This can slow your loop down up to 100ms per
-  // iteration or more.
+  // Query the presence detection status
   bool presence = sensor.checkPresence();
 
   // If presence == true, turn on the built-in LED.

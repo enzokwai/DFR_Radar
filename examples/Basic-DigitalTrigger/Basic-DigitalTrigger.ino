@@ -4,7 +4,8 @@
  * This is a basic example of how to instantiate a DFR_Radar object using
  * the second UART available on most Arduino boards.  This example is almost
  * identical to the Basic.ino, except this one uses a digital input to check
- * for presence triggering instead of querying over serial -- much faster!
+ * for presence triggering instead of querying over serial, which could be
+ * somewhat faster.
  *
  * The detection area and sensitivity are set quite low to make it easier
  * to test the unit right in front of you (too high and it'll just stay
