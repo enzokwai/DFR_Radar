@@ -157,7 +157,7 @@ bool DFR_Radar::setLockout( float time )
   if( time < 0.1 || time > 255 )
     return false;
 
-  char _comSetInhibit[15] = {0};
+  char _comSetInhibit[19] = {0};
   sprintf( _comSetInhibit, comSetInhibit, time );
 
   return setConfig( _comSetInhibit );
@@ -294,7 +294,7 @@ bool DFR_Radar::setTriggerLatency( float confirmationDelay, float disappearanceD
   if( disappearanceDelay < 0 || disappearanceDelay > 1500 )
     return false;
 
-  char _comSetLatency[20] = {0};
+  char _comSetLatency[28] = {0};
   sprintf( _comSetLatency, comSetLatency, confirmationDelay , disappearanceDelay );
 
   return setConfig( _comSetLatency );
@@ -307,8 +307,8 @@ bool DFR_Radar::setOutputLatency( float triggerDelay, float resetDelay )
     return false;
 
   // Convert seconds into 25ms units
-  uint16_t _triggerDelay = triggerDelay * 1000 / 25;
-  uint16_t _resetDelay   = resetDelay * 1000 / 25;
+  uint32_t _triggerDelay = triggerDelay * 1000 / 25;
+  uint32_t _resetDelay   = resetDelay * 1000 / 25;
 
   if( _triggerDelay > 65535 || _resetDelay > 65535 )
     return false;
@@ -321,7 +321,7 @@ bool DFR_Radar::setOutputLatency( float triggerDelay, float resetDelay )
 
 bool DFR_Radar::setSensitivity( uint8_t level )
 {
-  if( level < 0 || level > 9 )
+  if( level > 9 )
     return false;
 
   char _comSetSensitivity[17] = {0};

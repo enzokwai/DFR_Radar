@@ -323,10 +323,10 @@ class DFR_Radar
     static constexpr const char *comDetRangeCfg4    = "detRangeCfg -1 %u %u %u %u %u %u %u %u";
     static constexpr const char *comSetSensitivity  = "setSensitivity %u";
     static constexpr const char *comOutputLatency   = "outputLatency -1 %u %u";
-    static constexpr const char *comSetLatency      = "setLatency %u %u";
+    static constexpr const char *comSetLatency      = "setLatency %.3f %.3f";
     static constexpr const char *comSetGpioMode     = "setGpioMode 1 %u";
     static constexpr const char *comGetOutput       = "getOutput 1";
-    static constexpr const char *comSetInhibit      = "setInhibit %u";
+    static constexpr const char *comSetInhibit      = "setInhibit %.3f";
     static constexpr const char *comSetLedMode      = "setLedMode 1 %u";
     // static constexpr const char *comSetUartOutput   = "setUartOutput 1 1 0 1501";
     static constexpr const char *comSetEcho         = "setEcho 0";
