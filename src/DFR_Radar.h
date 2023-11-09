@@ -121,8 +121,8 @@ class DFR_Radar
     /**
      * @brief Configure delays between state changes on output (IO2)
      *
-     * @param triggerDelay  Time in seconds after the sensor has been triggered before setting output HIGH; factory default is 0.025s
-     * @param resetDelay    Time in seconds after the sensor is no longer triggered before returning the output LOW; factory default is 5s
+     * @param triggerDelay  Time in seconds after the sensor has been triggered before setting output HIGH; factory default is 2.5s
+     * @param resetDelay    Time in seconds after the sensor is no longer triggered before returning the output LOW; factory default is 10s
      *
      * @return false if either delay value is invalid (no changes made), true otherwise
      */
