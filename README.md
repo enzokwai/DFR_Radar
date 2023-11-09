@@ -54,7 +54,7 @@ There are multiple ways, but three of those are below (pick **one**, don't do al
 
  - Use the command line interface:
    ```shell
-   arduino-cli lib install DFR_Radar@1.0.0
+   arduino-cli lib install DFR_Radar@1.1.0
    ```
 
  -  Manual install: download the [latest release](https://github.com/MaffooClock/DFR_Radar/releases/latest), then see the documentation on [Importing a .zip Library](https://docs.arduino.cc/software/ide-v1/tutorials/installing-libraries#importing-a-zip-library).
@@ -66,12 +66,12 @@ There are multiple ways, but three of those are below (pick **one**, don't do al
 
  - Search the [Library Registry](https://registry.platformio.org/search?t=library) for `MaffooClock/DFR_Radar` and install it automatically.
 
- - Edit your [platformio.ini](https://docs.platformio.org/en/latest/projectconf/index.html) file and add `MaffooClock/DFR_Radar@^1.0.0` to the [`lib_deps`](https://docs.platformio.org/en/latest/projectconf/sections/env/options/library/lib_deps.html) stanza.
+ - Edit your [platformio.ini](https://docs.platformio.org/en/latest/projectconf/index.html) file and add `MaffooClock/DFR_Radar@^1.1.0` to the [`lib_deps`](https://docs.platformio.org/en/latest/projectconf/sections/env/options/library/lib_deps.html) stanza.
 
  - Use the command line interface:
    ```shell
    cd MyProject
-   pio pkg install --library "MaffooClock/DFR_Radar@^1.0.0"
+   pio pkg install --library "MaffooClock/DFR_Radar@^1.1.0"
    ```
 
 
