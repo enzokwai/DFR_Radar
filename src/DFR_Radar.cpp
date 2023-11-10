@@ -260,7 +260,7 @@ bool DFR_Radar::setOutputLatency( float triggerDelay, float resetDelay )
     return false;
 
   char _comOutputLatency[29] = {0};
-  sprintf( _comOutputLatency, comOutputLatency, _triggerDelay , _resetDelay );
+  sprintf( _comOutputLatency, comOutputLatency, (uint16_t)_triggerDelay , (uint16_t)_resetDelay );
 
   return setConfig( _comOutputLatency );
 }
