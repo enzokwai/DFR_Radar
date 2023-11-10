@@ -236,7 +236,7 @@ bool DFR_Radar::setTriggerLatency( float confirmationDelay, float disappearanceD
       char _disappearanceDelay[9] = {0};
       dtostrf( disappearanceDelay, 4, 3, _disappearanceDelay );
 
-      sprintf( _comSetLatency, comSetLatency, confirmationDelay , _disappearanceDelay );
+      sprintf( _comSetLatency, comSetLatency, _confirmationDelay , _disappearanceDelay );
     #else
       sprintf( _comSetLatency, comSetLatency, (uint8_t)confirmationDelay , (uint16_t)disappearanceDelay );
     #endif
