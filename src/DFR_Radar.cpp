@@ -296,8 +296,9 @@ bool DFR_Radar::configureLED( bool disabled )
 
 bool DFR_Radar::factoryReset()
 {
-  if( !stop() )
-    return false;
+  // if( !stop() )
+  //   return false;
+  stop();
 
   return sendCommand( comFactoryReset );
 }
@@ -339,8 +340,9 @@ bool DFR_Radar::setConfig( const char *command )
   }
   else
   {
-    if( !stop() )
-      return false;
+    // if( !stop() )
+    //   return false;
+    stop();
 
     if( !sendCommand( command ) )
       return false;
