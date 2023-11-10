@@ -17,9 +17,6 @@
 
 #include <Arduino.h>
 
-#ifdef ESP32
-  #define PinStatus uint8_t
-#endif
 
 class DFR_Radar
 {
@@ -178,7 +175,7 @@ class DFR_Radar
      *
      * @return false if the value is invalid (no changes made), true otherwise
      */
-    bool setTriggerLevel( PinStatus triggerLevel );
+    bool setTriggerLevel( uint8_t triggerLevel );
 
     /**
      * @brief Start the sensor

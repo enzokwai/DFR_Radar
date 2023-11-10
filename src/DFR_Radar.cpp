@@ -163,7 +163,7 @@ bool DFR_Radar::setLockout( float time )
   return setConfig( _comSetInhibit );
 }
 
-bool DFR_Radar::setTriggerLevel( PinStatus triggerLevel )
+bool DFR_Radar::setTriggerLevel( uint8_t triggerLevel )
 {
   if( triggerLevel != HIGH || triggerLevel != LOW )
     return false;
