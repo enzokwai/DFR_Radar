@@ -186,117 +186,37 @@ bool DFR_Radar::setTriggerLevel( uint8_t triggerLevel )
   return setConfig( _comSetGpioMode );
 }
 
-bool DFR_Radar::setDetectionArea( float rangeStart, float rangeEnd )
+bool DFR_Radar::setDetectionRange( float rangeStart, float rangeEnd )
 {
-  if( rangeStart < 0 || rangeEnd < 0 || rangeEnd < rangeStart )
+  if( rangeStart < 0 || rangeStart > 9.45 )
     return false;
 
-  // Convert meters into 15cm units
-  uint8_t _rangeStart = rangeStart / 0.15;
-  uint8_t _rangeEnd   = rangeEnd / 0.15;
-
-  if( _rangeStart > 127 || _rangeEnd > 127 )
+  if( rangeEnd < 0 || rangeEnd > 9.45 )
     return false;
 
-  char _comDetRangeCfg[23] = {0};
-  sprintf( _comDetRangeCfg, comDetRangeCfg1, _rangeStart, _rangeEnd );
+  if( rangeEnd < rangeStart )
+    return false;
 
-  return setConfig( _comDetRangeCfg );
+  char _comSetRange[21] = {0};
+
+  #ifdef __AVR__
+    #ifdef _STDLIB_H_
+      char _rangeStart[6] = {0};
+      dtostrf( rangeStart, 1, 3, _rangeStart );
+
+      char _rangeEnd[6] = {0};
+      dtostrf( rangeEnd, 1, 3, _rangeEnd );
+
+      sprintf( _comSetRange, comSetRange, _rangeStart, _rangeEnd );
+    #else
+      sprintf( _comSetRange, comSetRange, (uint8_t)rangeStart, (uint16_t)rangeEnd );
+    #endif
+  #else
+    sprintf( _comSetRange, comSetRange, rangeStart, rangeEnd );
+  #endif
+
+  return setConfig( _comSetRange );
 }
-
-bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float rangeB_Start, float rangeB_End )
-{
-  if( rangeA_Start < 0 || rangeA_End < 0 || rangeA_End < rangeA_Start )
-    return false;
-
-  if( rangeB_Start < 0 || rangeB_End < 0 || rangeB_End < rangeB_Start )
-    return false;
-
-  if( rangeB_Start < rangeA_End )
-    return false;
-
-  // Convert meters into 15cm units
-  uint8_t _rangeA_Start = rangeA_Start / 0.15;
-  uint8_t _rangeA_End   = rangeA_End / 0.15;
-  uint8_t _rangeB_Start = rangeB_Start / 0.15;
-  uint8_t _rangeB_End   = rangeB_End / 0.15;
-
-  if( _rangeA_Start > 127 || _rangeA_End > 127 || _rangeB_Start > 127 || _rangeB_End > 127 )
-    return false;
-
-  char _comDetRangeCfg[31] = {0};
-  sprintf( _comDetRangeCfg, comDetRangeCfg2, _rangeA_Start, _rangeA_End, _rangeB_Start, _rangeB_End );
-
-  return setConfig( _comDetRangeCfg );
-}
-
-bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float rangeB_Start, float rangeB_End, float rangeC_Start, float rangeC_End )
-{
-  if( rangeA_Start < 0 || rangeA_End < 0 || rangeA_End < rangeA_Start )
-    return false;
-
-  if( rangeB_Start < 0 || rangeB_End < 0 || rangeB_End < rangeB_Start )
-    return false;
-
-  if( rangeC_Start < 0 || rangeC_End < 0 || rangeC_End < rangeC_Start )
-    return false;
-
-  if( rangeB_Start < rangeA_End || rangeC_Start < rangeB_End )
-    return false;
-
-  // Convert meters into 15cm units
-  uint8_t _rangeA_Start = rangeA_Start / 0.15;
-  uint8_t _rangeA_End   = rangeA_End / 0.15;
-  uint8_t _rangeB_Start = rangeB_Start / 0.15;
-  uint8_t _rangeB_End   = rangeB_End / 0.15;
-  uint8_t _rangeC_Start = rangeC_Start / 0.15;
-  uint8_t _rangeC_End   = rangeC_End / 0.15;
-
-  if( _rangeA_Start > 127 || _rangeA_End > 127 || _rangeB_Start > 127 || _rangeB_End > 127 || _rangeC_Start > 127 || _rangeC_End > 127 )
-    return false;
-
-  char _comDetRangeCfg[39] = {0};
-  sprintf( _comDetRangeCfg, comDetRangeCfg3, _rangeA_Start, _rangeA_End, _rangeB_Start, _rangeB_End, _rangeC_Start, _rangeC_End );
-
-  return setConfig( _comDetRangeCfg );
-}
-
-bool DFR_Radar::setDetectionArea( float rangeA_Start, float rangeA_End, float rangeB_Start, float rangeB_End, float rangeC_Start, float rangeC_End, float rangeD_Start, float rangeD_End )
-{
-  if( rangeA_Start < 0 || rangeA_End < 0 || rangeA_End < rangeA_Start )
-    return false;
-
-  if( rangeB_Start < 0 || rangeB_End < 0 || rangeB_End < rangeB_Start )
-    return false;
-
-  if( rangeC_Start < 0 || rangeC_End < 0 || rangeC_End < rangeC_Start )
-    return false;
-
-  if( rangeD_Start < 0 || rangeD_End < 0 || rangeD_End < rangeD_Start )
-    return false;
-
-  if( rangeB_Start < rangeA_End || rangeC_Start < rangeB_End || rangeD_Start < rangeC_End )
-    return false;
-
-  // Convert meters into 15cm units
-  uint8_t _rangeA_Start = rangeA_Start / 0.15;
-  uint8_t _rangeA_End   = rangeA_End / 0.15;
-  uint8_t _rangeB_Start = rangeB_Start / 0.15;
-  uint8_t _rangeB_End   = rangeB_End / 0.15;
-  uint8_t _rangeC_Start = rangeC_Start / 0.15;
-  uint8_t _rangeC_End   = rangeC_End / 0.15;
-  uint8_t _rangeD_Start = rangeD_Start / 0.15;
-  uint8_t _rangeD_End   = rangeD_End / 0.15;
-
-  if( _rangeA_Start > 127 || _rangeA_End > 127 || _rangeB_Start > 127 || _rangeB_End > 127 || _rangeC_Start > 127 || _rangeC_End > 127 || _rangeD_Start > 127 || _rangeD_End > 127 )
-    return false;
-
-  char _comDetRangeCfg[47] = {0};
-  sprintf( _comDetRangeCfg, comDetRangeCfg4, _rangeA_Start, _rangeA_End, _rangeB_Start, _rangeB_End, _rangeC_Start, _rangeC_End, _rangeD_Start, _rangeD_End );
-
-  return setConfig( _comDetRangeCfg );
-}
-
 
 bool DFR_Radar::setTriggerLatency( float confirmationDelay, float disappearanceDelay )
 {
@@ -326,7 +246,6 @@ bool DFR_Radar::setTriggerLatency( float confirmationDelay, float disappearanceD
 
   return setConfig( _comSetLatency );
 }
-
 
 bool DFR_Radar::setOutputLatency( float triggerDelay, float resetDelay )
 {

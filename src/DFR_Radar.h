@@ -36,85 +36,20 @@ class DFR_Radar
     bool begin( void );
 
     /**
-     * @brief Configure sensor detection for a single range
+     * @brief Configure sensor detection range
      *
-     * @note Values are in meters; minimum is 0, maximum is 19.05; end must be greater than start
+     * @note Values are in meters; minimum is 0, maximum is 9.45; end must be greater than start.
+     *       Internally, the range is converted to a level between 0-63, each one being ~15cm.  If
+     *       the value isn't a multiple of 15cm, the sensor will round down to the nearest 15cm,
+     *       e.g. 5m = 5 / 0.15 = 33.3, which will be rounded down to 33, so your effective range
+     *       would actually be 4.95m
      *
-     * @param rangeStart
-     * @param rangeEnd
+     * @param rangeStart Factory default is 0
+     * @param rangeEnd   Factory default is 6
      *
      * @return false if the range values are invalid (no changes made), true otherwise
      */
-    bool setDetectionArea( float rangeStart, float rangeEnd );
-
-    /**
-     * @brief Configure sensor detection for two ranges
-     *
-     * @note Values are in meters; minimum is 0, maximum is 19.05; end must be greater than start;
-     *       subsequent range start value must be greater than previous range end value
-     *
-     * @param rangeA_Start
-     * @param rangeA_End
-     *
-     * @param rangeB_Start
-     * @param rangeB_End
-     *
-     * @return false if any of the range values are invalid (no changes made), true otherwise
-     */
-    bool setDetectionArea(
-      float rangeA_Start, float rangeA_End,
-      float rangeB_Start, float rangeB_End
-    );
-
-    /**
-     * @brief Configure sensor detection for three ranges
-     *
-     * @note Values are in meters; minimum is 0, maximum is 19.05; end must be greater than start;
-     *       subsequent range start value must be greater than previous range end value
-     *
-     * @param rangeA_Start
-     * @param rangeA_End
-     *
-     * @param rangeB_Start
-     * @param rangeB_End
-     *
-     * @param rangeC_Start
-     * @param rangeC_End
-     *
-     * @return false if any of the range values are invalid (no changes made), true otherwise
-     */
-    bool setDetectionArea(
-      float rangeA_Start, float rangeA_End,
-      float rangeB_Start, float rangeB_End,
-      float rangeC_Start, float rangeC_End
-    );
-
-    /**
-     * @brief Configure sensor detection for four ranges
-     *
-     * @note Values are in meters; minimum is 0, maximum is 19.05; end must be greater than start;
-     *       subsequent range start value must be greater than previous range end value
-     *
-     * @param rangeA_Start
-     * @param rangeA_End
-     *
-     * @param rangeB_Start
-     * @param rangeB_End
-     *
-     * @param rangeC_Start
-     * @param rangeC_End
-     *
-     * @param rangeD_Start
-     * @param rangeD_End
-     *
-     * @return false if any of the range values are invalid (no changes made), true otherwise
-     */
-    bool setDetectionArea(
-      float rangeA_Start, float rangeA_End,
-      float rangeB_Start, float rangeB_End,
-      float rangeC_Start, float rangeC_End,
-      float rangeD_Start, float rangeD_End
-    );
+    bool setDetectionRange( float rangeStart, float rangeEnd );
 
     /**
      * @brief Set the sensitivity level
@@ -314,10 +249,6 @@ class DFR_Radar
     static constexpr const char *comStop            = "sensorStop";
     static constexpr const char *comStart           = "sensorStart";
     static constexpr const char *comResetSystem     = "resetSystem 0";
-    static constexpr const char *comDetRangeCfg1    = "detRangeCfg -1 %u %u";
-    static constexpr const char *comDetRangeCfg2    = "detRangeCfg -1 %u %u %u %u";
-    static constexpr const char *comDetRangeCfg3    = "detRangeCfg -1 %u %u %u %u %u %u";
-    static constexpr const char *comDetRangeCfg4    = "detRangeCfg -1 %u %u %u %u %u %u %u %u";
     static constexpr const char *comSetSensitivity  = "setSensitivity %u";
     static constexpr const char *comOutputLatency   = "outputLatency -1 %u %u";
     static constexpr const char *comSetGpioMode     = "setGpioMode 1 %u";
@@ -329,18 +260,23 @@ class DFR_Radar
     static constexpr const char *comResponseFail    = "Error";
     static constexpr const char *comSaveCfg         = "saveConfig";  // "saveCfg 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
     static constexpr const char *comFactoryReset    = "resetCfg";    // "factoryReset 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
+    static constexpr const char *comSaveCfg         = "saveConfig";
+    static constexpr const char *comFactoryReset    = "resetCfg";
 
     #ifdef __AVR__
       #ifdef _STDLIB_H_
+        static constexpr const char *comSetRange    = "setRange %s %s";
         static constexpr const char *comSetLatency  = "setLatency %s %s";
         static constexpr const char *comSetInhibit  = "setInhibit %s";
       #else
         #warning Floats in `sprintf()` will be converted to integers
+        static constexpr const char *comSetRange    = "setRange %u %u";
         static constexpr const char *comSetLatency  = "setLatency %u %u";
         static constexpr const char *comSetInhibit  = "setInhibit %u";
       #endif
     #else
       #warning Assuming floats work in `sprintf()` -- it might not!
+      static constexpr const char *comSetRange      = "setRange %.3f %.3f";
       static constexpr const char *comSetLatency    = "setLatency %.3f %.3f";
       static constexpr const char *comSetInhibit    = "setInhibit %.3f";
     #endif
