@@ -41,8 +41,8 @@ void setup()
   // Restore to the factory settings -- it's not necessary to do this unless needed
   sensor.factoryReset();
 
-  // Set a detection range of 0 to 1 meter (19.05m is the maximum)
-  sensor.setDetectionArea( 0, 1 );
+  // Set a detection range of 0 to 1 meter (9.45m is the maximum)
+  sensor.setDetectionRange( 0, 1 );
 
   // Lower the sensitivity so that it's easier to test
   sensor.setSensitivity( 2 );
