@@ -300,7 +300,10 @@ bool DFR_Radar::factoryReset()
   //   return false;
   stop();
 
-  return sendCommand( comFactoryReset );
+  bool success = sendCommand( comFactoryReset );
+  delay( 2000 );
+
+  return success;
 }
 
 bool DFR_Radar::configBegin()
