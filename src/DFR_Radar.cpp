@@ -158,7 +158,19 @@ bool DFR_Radar::setLockout( float time )
     return false;
 
   char _comSetInhibit[19] = {0};
-  sprintf( _comSetInhibit, comSetInhibit, time );
+
+  #ifdef __AVR__
+    #ifdef _STDLIB_H_
+      char _time[8] = {0};
+      dtostrf( time, 3, 3, _time );
+
+      sprintf( _comSetInhibit, comSetInhibit, _time );
+    #else
+      sprintf( _comSetInhibit, comSetInhibit, (uint8_t)time );
+    #endif
+  #else
+    sprintf( _comSetInhibit, comSetInhibit, time );
+  #endif
 
   return setConfig( _comSetInhibit );
 }
@@ -295,7 +307,22 @@ bool DFR_Radar::setTriggerLatency( float confirmationDelay, float disappearanceD
     return false;
 
   char _comSetLatency[28] = {0};
-  sprintf( _comSetLatency, comSetLatency, confirmationDelay , disappearanceDelay );
+
+  #ifdef __AVR__
+    #ifdef _STDLIB_H_
+      char _confirmationDelay[8] = {0};
+      dtostrf( confirmationDelay, 3, 3, _confirmationDelay );
+
+      char _disappearanceDelay[9] = {0};
+      dtostrf( disappearanceDelay, 4, 3, _disappearanceDelay );
+
+      sprintf( _comSetLatency, comSetLatency, confirmationDelay , _disappearanceDelay );
+    #else
+      sprintf( _comSetLatency, comSetLatency, (uint8_t)confirmationDelay , (uint16_t)disappearanceDelay );
+    #endif
+  #else
+    sprintf( _comSetLatency, comSetLatency, confirmationDelay , disappearanceDelay );
+  #endif
 
   return setConfig( _comSetLatency );
 }

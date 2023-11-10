@@ -320,10 +320,8 @@ class DFR_Radar
     static constexpr const char *comDetRangeCfg4    = "detRangeCfg -1 %u %u %u %u %u %u %u %u";
     static constexpr const char *comSetSensitivity  = "setSensitivity %u";
     static constexpr const char *comOutputLatency   = "outputLatency -1 %u %u";
-    static constexpr const char *comSetLatency      = "setLatency %.3f %.3f";
     static constexpr const char *comSetGpioMode     = "setGpioMode 1 %u";
     static constexpr const char *comGetOutput       = "getOutput 1";
-    static constexpr const char *comSetInhibit      = "setInhibit %.3f";
     static constexpr const char *comSetLedMode      = "setLedMode 1 %u";
     // static constexpr const char *comSetUartOutput   = "setUartOutput 1 1 0 1501";
     static constexpr const char *comSetEcho         = "setEcho 0";
@@ -331,6 +329,21 @@ class DFR_Radar
     static constexpr const char *comResponseFail    = "Error";
     static constexpr const char *comSaveCfg         = "saveConfig";  // "saveCfg 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
     static constexpr const char *comFactoryReset    = "resetCfg";    // "factoryReset 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
+
+    #ifdef __AVR__
+      #ifdef _STDLIB_H_
+        static constexpr const char *comSetLatency  = "setLatency %s %s";
+        static constexpr const char *comSetInhibit  = "setInhibit %s";
+      #else
+        #warning Floats in `sprintf()` will be converted to integers
+        static constexpr const char *comSetLatency  = "setLatency %u %u";
+        static constexpr const char *comSetInhibit  = "setInhibit %u";
+      #endif
+    #else
+      #warning Assuming floats work in `sprintf()` -- it might not!
+      static constexpr const char *comSetLatency    = "setLatency %.3f %.3f";
+      static constexpr const char *comSetInhibit    = "setInhibit %.3f";
+    #endif
 };
 
 #endif
