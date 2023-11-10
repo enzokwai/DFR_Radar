@@ -258,8 +258,6 @@ class DFR_Radar
     static constexpr const char *comSetEcho         = "setEcho 0";
     static constexpr const char *comResponseSuccess = "Done";
     static constexpr const char *comResponseFail    = "Error";
-    static constexpr const char *comSaveCfg         = "saveConfig";  // "saveCfg 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
-    static constexpr const char *comFactoryReset    = "resetCfg";    // "factoryReset 0x45670123 0xCDEF89AB 0x956128C6 0xDF54AC89";
     static constexpr const char *comSaveCfg         = "saveConfig";
     static constexpr const char *comFactoryReset    = "resetCfg";
 
