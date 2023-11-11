@@ -87,13 +87,16 @@ _Documentation update in progress..._
 
 ## Compatibility
 
-| **MCU**                         | **Tested - Works** | **Tested - Doesn't Work** |   **Untested**   | **Remarks** |
-|---------------------------------|:------------------:|:-------------------------:|:----------------:|-------------|
-| Arduino Uno (ATmega328P)        | :white_check_mark: |                           |                  |             |
-| Arduino Nano Every (ATMega4809) | :white_check_mark: |                           |                  |             |
-| Arduino Mega2560                | :white_check_mark: |                           |                  |             |
-| Arduino Leonardo (ATmega32u4)   |                    |                           |:heavy_check_mark:|             |
-| ESP32                           | :white_check_mark: |                           |                  |             |
+Although the SEN0395 and this library _should_ work on nearly any Arduino-compatible microcontroller, I have personally tested each one of these to confirm that they do work:
+
+ * Arduino Uno (ATmega328P)
+ * Arduino Nano Every (ATmega4809)
+ * Arduino Mega R3 (ATmega2560)
+ * Arduino Due (AT91SAM3X8E)
+ * Arduino Nano ESP32 (ESP32-S3)
+ * Generic "ESP32 DEVKIT V1" (ESP-WROOM-32)
+ * Seeeduino Xiao (SAMD21)
+ * Teensy 4.x/MicroMod (iMXRT1062)
 
 
 ## Credits
