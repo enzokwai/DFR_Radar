@@ -2,17 +2,17 @@
   "name": "DFR_Radar",
   "keywords": "arduino, millimeter-wave, radar, 24GHz, DFRobot, SEN0395",
   "description": "Arduino library for working with the DFRobot 24GHz millimeter-wave Human Presence Detection sensor (SEN0395).",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "authors": [
-    {
-      "name": "huyujie (DFRobot)",
-      "email": "yujie.hu@dfrobot.com",
-      "maintainer": false
-    },
     {
       "name": "Matthew Clark",
       "url": "https://github.com/MaffooClock",
       "maintainer": true
+    },
+    {
+      "name": "huyujie (DFRobot)",
+      "email": "yujie.hu@dfrobot.com",
+      "maintainer": false
     }
   ],
   "repository": {
