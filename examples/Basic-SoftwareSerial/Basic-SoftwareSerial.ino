@@ -56,10 +56,6 @@ void setup()
   // Set both of these to 0 for instant on/off, although you may get short-cycling.
   sensor.setOutputLatency( 1, 5 );
 
-  // The default timeout is 1 second, which could cause
-  // the `loop()` to be too slow.  100ms seems to work.
-  sensorSerial.setTimeout( 100 );
-
   // Setup the built-in LED
   pinMode( LED_BUILTIN, OUTPUT );
 }
