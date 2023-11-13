@@ -95,7 +95,7 @@ bool DFR_Radar::checkPresence()
 
   // Factory default settings have $JYBSS messages sent once per second,
   // but we won't want to wait; this will prompt for status immediately
-  sensorUART->write( comGetOutput );
+  serialWrite( comGetOutput );
 
   /**
    * Get the response immediately after sending the command.
@@ -393,6 +393,31 @@ void DFR_Radar::reboot()
   sendCommand( comResetSystem );
 }
 
+size_t DFR_Radar::serialWrite( const char *command )
+{
+  static char _command[64] = {0};
+  size_t commandLength = strlen( command ) + 3;
+
+  // Ensure the re-usable buffer is empty
+  memset( &_command[0], 0, sizeof( _command ) );
+
+  // Make a properly-terminated copy of the command
+  snprintf( _command, commandLength, "%s\r\n", command );
+
+  // Make sure we have exactly enough time
+  sensorUART->setTimeout( comTimeout );
+
+  // Clear the receive buffer
+  while( sensorUART->available() )
+    sensorUART->read();
+
+  // Send the command...
+  sensorUART->write( _command );
+  sensorUART->flush();
+
+  return commandLength;
+}
+
 bool DFR_Radar::sendCommand( const char *command )
 {
   char responseBuffer[32] = {0};
@@ -405,11 +430,9 @@ bool DFR_Radar::sendCommand( const char *command )
   const size_t commandLength = strlen( command );
   const size_t minLength = min( commandLength, minResponseLength );
 
-  // Make sure we have exactly enough time
-  sensorUART->setTimeout( comTimeout );
 
   // Send the command...
-  sensorUART->write( command );
+  serialWrite( command );
 
   // ...then wait for a response
   while( millis() < timeout )
