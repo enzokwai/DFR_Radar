@@ -18,7 +18,7 @@ The SEN0395 24GHz millimeter-wave Human Presence Detection sensor (available fro
 
 ## About the SEN0395
 
-![Front and back of DFRobot SEN0395 module](.github/photos/SEN0395.png)
+![Front and back of DFRobot SEN0395 module](https://raw.githubusercontent.com/MaffooClock/DFR_Radar/master/.github/photos/SEN0395.png)
 
 This 24GHz millimeter-wave radar sensor employs a [frequency-modulated continuous-wave (FMCW) radar](https://en.wikipedia.org/wiki/Continuous-wave_radar#Modulated_continuous-wave) featuring multi-mode modulation and separate transmit and receive antennas.
 
