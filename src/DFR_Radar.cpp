@@ -369,11 +369,13 @@ bool DFR_Radar::start()
   if( !stopped )
     return true;
 
-  if( !sendCommand( comStart ) )
-    return false;
+  if( sendCommand( comStart, comFailStarted ) )
+  {
+    stopped = false;
+    return true;
+  }
 
-  stopped = false;
-  return true;
+  return false;
 }
 
 bool DFR_Radar::stop()
@@ -381,11 +383,13 @@ bool DFR_Radar::stop()
   if( stopped )
     return true;
 
-  if( !sendCommand( comStop ) )
-    return false;
+  if( sendCommand( comStop, comFailStopped ) )
+  {
+    stopped = true;
+    return true;
+  }
 
-  stopped = true;
-  return true;
+  return false;
 }
 
 void DFR_Radar::reboot()
@@ -420,7 +424,13 @@ size_t DFR_Radar::serialWrite( const char *command )
 
 bool DFR_Radar::sendCommand( const char *command )
 {
-  char responseBuffer[32] = {0};
+  return sendCommand( command, NULL );
+}
+
+bool DFR_Radar::sendCommand( const char *command, const char *acceptableResponse )
+{
+  bool errorAcceptable = false;
+  char lineBuffer[64] = {0};
   unsigned long timeout = millis() + comTimeout;
 
   static const size_t successLength = strlen( comResponseSuccess );
@@ -428,8 +438,11 @@ bool DFR_Radar::sendCommand( const char *command )
   static const size_t minResponseLength = min( successLength, failLength );
 
   const size_t commandLength = strlen( command );
-  const size_t minLength = min( commandLength, minResponseLength );
+  const size_t acceptableLength = strlen( acceptableResponse );
+  size_t minLength = min( commandLength, minResponseLength );
 
+  if( acceptableResponse != NULL )
+    minLength = min( acceptableLength, minLength );
 
   // Send the command...
   serialWrite( command );
@@ -440,31 +453,56 @@ bool DFR_Radar::sendCommand( const char *command )
     if( sensorUART->available() <= 0 )
       continue;
 
-    // Start with an empty buffer
-    responseBuffer[0] = '\0';
+    // Ensure the buffer is empty
+    memset( &lineBuffer[0], 0, sizeof( lineBuffer ) );
 
     // Read a whole line
-    size_t responseLength = sensorUART->readBytesUntil( '\n', responseBuffer, sizeof( responseBuffer ) );
+    size_t responseLength = sensorUART->readBytesUntil( '\n', lineBuffer, sizeof( lineBuffer ) );
+
+    // The sensor is supposed to terminate lines with <CRLF>, and we stopped at <LF>,
+    // so the last character in the line buffer should be a <CR>.  If so, swap it out
+    // for a null terminator
+    uint8_t lastCharacter = strlen( lineBuffer ) - 1;
+    if( lineBuffer[lastCharacter] == '\r' )
+      lineBuffer[lastCharacter] = '\0';
+
+    // Update the length and ensure the line we've received is properly terminated
+    responseLength = strlen( lineBuffer );
+    lineBuffer[responseLength] = '\0';
 
     // We got something shorter than anything we're expecting, so try again
     if( responseLength < minLength )
       continue;
 
-    // Check if that line is an echo of the original command
-    if( strncmp( command, responseBuffer, commandLength ) == 0 )
+    // Check if that line is the command prompt
+    if( strncmp( comPrompt, lineBuffer, strlen( comPrompt ) ) == 0 )
       continue;
 
+    // ...or if that line is an echo of the original command
+    if( strncmp( command, lineBuffer, commandLength ) == 0 )
+      continue;
+
+    // ...or if that line contains an expected response
+    if( acceptableResponse != NULL && strncmp( acceptableResponse, lineBuffer, acceptableLength ) == 0 )
+    {
+      errorAcceptable = true;
+
+      // Even though we got what we want, we can't return yet; we need to go one more round
+      // so that we get the "Done" or "Error" that follows out of the serial buffer.
+      continue;
+    }
+
     // ...or if that line says "Done"
-    if( strncmp( comResponseSuccess, responseBuffer, successLength ) == 0 )
+    if( strncmp( comResponseSuccess, lineBuffer, successLength ) == 0 )
       return true;
 
     // ...or if that line says "Error"
-    if( strncmp( comResponseFail, responseBuffer, failLength ) == 0 )
-      return false;
+    if( strncmp( comResponseFail, lineBuffer, failLength ) == 0 )
+      return errorAcceptable;
 
     // ...we got nothing we expected, so try again
   }
 
   // We've timed out
-  return false;
+  return errorAcceptable;
 }
