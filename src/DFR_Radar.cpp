@@ -438,8 +438,8 @@ bool DFR_Radar::sendCommand( const char *command, const char *acceptableResponse
   static const size_t minResponseLength = min( successLength, failLength );
 
   const size_t commandLength = strlen( command );
-  const size_t acceptableLength = strlen( acceptableResponse );
   size_t minLength = min( commandLength, minResponseLength );
+  const size_t acceptableLength = acceptableResponse == NULL ? minLength : strlen( acceptableResponse );
 
   if( acceptableResponse != NULL )
     minLength = min( acceptableLength, minLength );
