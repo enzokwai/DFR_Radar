@@ -65,6 +65,14 @@ bool DFR_Radar::begin()
   return true;
 }
 
+void DFR_Radar::setStream( Stream *s ) {
+    sensorUART = s;
+}
+
+bool DFR_Radar::isReady() {
+    return sensorUART != nullptr;
+}
+
 size_t DFR_Radar::readLines( char *buffer, size_t lineCount )
 {
   unsigned long timeLimit = millis() + readPacketTimeout;
